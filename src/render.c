@@ -104,9 +104,12 @@ void draw_triangle_filled(triangle t) {
             float dir3 = cross_product(v3_to_v1, v3_to_p).z;
 
 
-            // calculate z using plane equation
-            vec3 normal = cross_product(v1_to_v2, v1_to_p);
-            float z = -1 * (normal.x * v1_to_p.x + normal.y * v1_to_p.y) / normal.z;
+            // calculate z using barycentric coordinates
+            float area = cross_product(v1_to_v2, v3_to_v1).z;
+            float w1 = cross_product(v2_to_v3, v2_to_p).z / area;
+            float w2 = cross_product(v3_to_v1, v3_to_p).z / area;
+            float w3 = cross_product(v1_to_v2, v1_to_p).z / area;
+            float z = w1 * v1.z + w2 * v2.z + w3 * v3.z;
 
             if ((sgn(dir1) == sgn(dir2)) && (sgn(dir2) == sgn(dir3))) {
                 vec3 pos = {x, y, z};
