@@ -187,22 +187,24 @@ void cycle_buffer() {
 }
 
 void push_to_screen() {
-    char buffer[HEIGHT * WIDTH * 20];
-    int index = 0;
+    printf("\033[?25l"); // Hide cursor
+    printf("\033[H"); // Move cursor to home position
+
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
             #ifdef DOUBLE_BUFFER
-                index += sprintf(&buffer[index], "\033[48;2;%d;%d;%dm ", single_buffer[i][j][0], single_buffer[i][j][1], single_buffer[i][j][2]);
+                printf("\033[48;2;%d;%d;%dm ", single_buffer[i][j][0], single_buffer[i][j][1], single_buffer[i][j][2]);
             #else
-                index += sprintf(&buffer[index], "\033[48;2;%d;%d;%dm ", screen[i][j][0], screen[i][j][1], screen[i][j][2]);
+                printf("\033[48;2;%d;%d;%dm ", screen[i][j][0], screen[i][j][1], screen[i][j][2]);
             #endif
         }
-        index += sprintf(&buffer[index], "\n");
+        printf("\033[0m\n"); // Reset color and move to the next line
     }
-    printf("%s", buffer);
     fflush(stdout);
-    
+
     #ifdef DOUBLE_BUFFER
         cycle_buffer();
     #endif
+
+    printf("\033[?25h"); // Show cursor
 }

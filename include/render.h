@@ -4,8 +4,8 @@
 #include "linalg.h"
 #include "structs.h"
 
-#define WIDTH 50
-#define HEIGHT 25
+#define WIDTH 200
+#define HEIGHT 100
 
 #define DOUBLE_BUFFER
 

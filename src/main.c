@@ -88,7 +88,7 @@ int main() {
         push_to_screen();
 
         // Sleep for animation effect
-        usleep(10000);
+        usleep(20000);
     }
 
     printf("\033[20;0H"); // Move cursor below the output
