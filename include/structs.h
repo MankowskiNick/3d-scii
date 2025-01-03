@@ -11,22 +11,19 @@ typedef enum {
 typedef struct {
     double x;
     double y;
-} vec2;
-
-typedef struct {
-    double x;
-    double y;
     double z;
 } vec3;
 
 typedef struct {
-    vec3 verts[3];
+    int verts[3];
     float color[4];
-} triangle;
+} face;
 
 typedef struct {
-    triangle* tris;
-    int num_tris;
+    uint num_verts;
+    uint num_tris;
+    vec3* verts;
+    face* tris;
     draw_mode mode;
 } mesh;
 
@@ -35,7 +32,12 @@ static inline void free_mesh(mesh* m) {
         free(m->tris);
         m->tris = NULL;
     }
+    if (m->verts != NULL) {
+        free(m->verts);
+        m->verts = NULL;
+    }
     m->num_tris = 0;
+    m->num_verts = 0;
 }
 
 

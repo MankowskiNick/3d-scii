@@ -36,40 +36,27 @@ void rot_z(vec3* v, double angle) {
 }
 
 void rot(vec3* v, vec3 axis, double angle) {
-    // rotate so that the axis is the x-axis
-    double angle_x = atan2(axis.y, axis.z);
-    rot_z(v, angle_x);
-    double angle_y = atan2(axis.x, axis.z);
-    rot_y(v, angle_y);
-
-    // rotate around the x-axis
+    // align v with xz plane
+    float ang1 = atan2(axis.y, axis.z);
+    rot_x(v, -ang1);
+    float ang2 = atan2(axis.x, axis.z);
+    rot_y(v, -ang2);
+    // rotate v
     rot_z(v, angle);
+    // unalign v with xz plane
+    rot_y(v, ang2);
+    rot_x(v, ang1);
 
-    // rotate back to the original position
-    rot_y(v, -angle_y);
-    rot_x(v, -angle_x);
-}
-
-void rot_triangle(triangle* t, vec3 axis, double angle) {    
-    for (int i = 0; i < 3; i++) {
-        rot(&t->verts[i], axis, angle);
-    }
-}
-
-void translate_triangle(triangle* t, vec3 translation) {
-    for (int i = 0; i < 3; i++) {
-        translate(&t->verts[i], translation);
-    }
 }
 
 void rot_mesh(mesh* m, vec3 axis, double angle) {
-    for (int i = 0; i < m->num_tris; i++) {
-        rot_triangle(&m->tris[i], axis, angle);
+    for (int i = 0; i < m->num_verts; i++) {
+        rot(&m->verts[i], axis, angle);
     }
 }
 
 void translate_mesh(mesh* m, vec3 translation) {
-    for (int i = 0; i < m->num_tris; i++) {
-        translate_triangle(&m->tris[i], translation);
+    for (int i = 0; i < m->num_verts; i++) {
+        translate(&m->verts[i], translation);
     }
 }

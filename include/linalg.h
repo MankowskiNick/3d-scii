@@ -15,9 +15,6 @@ void rot_y(vec3* v, double angle);
 void rot_z(vec3* v, double angle);
 void rot(vec3* v, vec3 axis, double angle);
 
-void rot_triangle(triangle* t, vec3 axis, double angle);
-void translate_triangle(triangle* t, vec3 translation);
-
 void rot_mesh(mesh* m, vec3 axis, double angle);
 void translate_mesh(mesh* m, vec3 translation);
 

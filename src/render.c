@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#define X_STEP 2.0 / WIDTH
-#define Y_STEP 2.0 / HEIGHT
+#define X_STEP 0.5 / WIDTH
+#define Y_STEP 0.5 / HEIGHT
 #define ERROR_MARGIN 0.01
 
 #define clamp_rgb(x) (x < 0 ? 0 : (x > 255 ? 255 : x))
@@ -54,11 +54,31 @@ void fill(float color[4]) {
     }
 }
 
+// z buffer is not correct.  not sure what is wrong.
+void draw_line(vec3 v1, vec3 v2, float color[4]) {
+    float dx = v2.x - v1.x;
+    float dy = v2.y - v1.y;
+    float dz = v2.z - v1.z;
+    float stepsf = max(abs(dx), abs(dy)) * 1000.0f;
+    if (stepsf < 1.0f) stepsf = 1.0f;
+    int steps = (int)stepsf;
+    float sx = dx / steps;
+    float sy = dy / steps;
+    float sz = dz / steps;
+    vec3 pos = v1;
+    for (int i = 0; i <= steps; i++) {
+        draw_pixel(pos, color);
+        pos.x += sx;
+        pos.y += sy;
+        pos.z += sz;
+    }
+}
+
 void draw_pixel(vec3 pos, float color[4]) {
     int row = (int)round(scale_y(pos.y));
     int col = (int)round(scale_x(pos.x));
 
-    if (pos.x < -1 || pos.x > 1 || pos.y < -1 || pos.y > 1) {
+    if (row < 0 || row >= HEIGHT || col < 0 || col >= WIDTH) {
         return;
     }
 
@@ -75,16 +95,22 @@ void draw_pixel(vec3 pos, float color[4]) {
     }
 }
 
-void draw_triangle_wireframe(triangle t) {
+void draw_face_wireframe(mesh* m, face t) {
     for (int i = 0; i < 3; i++) {
-        draw_line(t.verts[i], t.verts[(i + 1) % 3], t.color);
+        uint v1 = t.verts[i];
+        uint v2 = t.verts[(i + 1) % 3];
+        draw_line(m->verts[v1], m->verts[v2], t.color);
     }
 }
 
-void draw_triangle_filled(triangle t) {
-    vec3 v1 = t.verts[0];
-    vec3 v2 = t.verts[1];
-    vec3 v3 = t.verts[2];
+void draw_face_filled(mesh* m, face t) {
+    uint v1_id = t.verts[0];
+    uint v2_id = t.verts[1];
+    uint v3_id = t.verts[2];
+
+    vec3 v1 = m->verts[v1_id];
+    vec3 v2 = m->verts[v2_id];
+    vec3 v3 = m->verts[v3_id];
 
     float color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
 
@@ -117,20 +143,20 @@ void draw_triangle_filled(triangle t) {
             float z = w1 * v1.z + w2 * v2.z + w3 * v3.z;
 
             if ((sgn(dir1) == sgn(dir2)) && (sgn(dir2) == sgn(dir3))) {
-                vec3 pos = {x, y, z};
+                vec3 pos = { x, y, z };
                 draw_pixel(pos, color);
             }
         }
     }
 }
 
-void draw_triangle(triangle t, draw_mode mode) {
+void draw_face(mesh* m, face t, draw_mode mode) {
     switch (mode) {
         case FILL:
-            draw_triangle_filled(t);
+            draw_face_filled(m, t);
             break;
         case WIRE:
-            draw_triangle_wireframe(t);
+            draw_face_wireframe(m, t);
             break;
         default:
             fprintf(stderr, "Invalid draw mode\n");
@@ -138,29 +164,9 @@ void draw_triangle(triangle t, draw_mode mode) {
     }
 }
 
-// z buffer is not correct.  not sure what is wrong.
-void draw_line(vec3 v1, vec3 v2, float color[4]) {
-    float dx = v2.x - v1.x;
-    float dy = v2.y - v1.y;
-    float dz = v2.z - v1.z;
-    float stepsf = max(abs(dx), abs(dy)) * 1000.0f;
-    if (stepsf < 1.0f) stepsf = 1.0f;
-    int steps = (int)stepsf;
-    float sx = dx / steps;
-    float sy = dy / steps;
-    float sz = dz / steps;
-    vec3 pos = v1;
-    for (int i = 0; i <= steps; i++) {
-        draw_pixel(pos, color);
-        pos.x += sx;
-        pos.y += sy;
-        pos.z += sz;
-    }
-}
-
 void draw_mesh(mesh m) {
     for (int i = 0; i < m.num_tris; i++) {
-        draw_triangle(m.tris[i], m.mode);
+        draw_face(&m, m.tris[i], m.mode);
     }
 }
 
