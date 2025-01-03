@@ -21,7 +21,7 @@ typedef struct {
 
 typedef struct {
     vec3 verts[3];
-    int color[4];
+    float color[4];
 } triangle;
 
 typedef struct {

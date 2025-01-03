@@ -14,13 +14,14 @@ file(GLOB_RECURSE SRC_FILES src/*.c)
 add_executable(game ${SRC_FILES})
 
 # Find and link required libraries
-find_package(Threads REQUIRED)
-target_link_libraries(game PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 target_link_libraries(game m)  # Link math library
 
 # Set compiler warnings and optimization level
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-    target_compile_options(game PRIVATE -Wall -Wextra -Wpedantic -O3)
+    target_compile_options(game PRIVATE -Wall -Wextra -Wpedantic)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_options(game PRIVATE -O3)
+    endif()
 endif()
 
 # Include directories

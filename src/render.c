@@ -5,55 +5,60 @@
 
 #define X_STEP 2.0 / WIDTH
 #define Y_STEP 2.0 / HEIGHT
+#define ERROR_MARGIN 0.01
 
 #define clamp_rgb(x) (x < 0 ? 0 : (x > 255 ? 255 : x))
 #define scale_x(x) (int)(x * WIDTH / 2 + WIDTH / 2)
 #define scale_y(y) (int)(-y * HEIGHT / 2 + HEIGHT / 2)
+#define scale_rgb(x) (int)(x * 255)
 
-int screen[HEIGHT][WIDTH][3];
+unsigned char screen[BUFFER_SIZE][HEIGHT][WIDTH][3];
 int single_buffer[HEIGHT][WIDTH][3];
 float z_buffer[HEIGHT][WIDTH];
 
 void initialize_screen() {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            screen[i][j][0] = 0;
-            screen[i][j][1] = 0;
-            screen[i][j][2] = 0;
+            for (int k = 0; k < BUFFER_SIZE; k++) {
+                screen[k][i][j][0] = 0;
+                screen[k][i][j][1] = 0;
+                screen[k][i][j][2] = 0;
+            }
         }
     }
 }
 
 void clear_screen() {
-    // reset color
-    printf("\033[0m");
-    printf("\033[2J\033[H"); // ANSI escape code to clear the screen
+    printf("\033[?25l");     // Hide cursor
+    printf("\033[H");        // Move cursor to home position (1,1)
     fflush(stdout);
+    
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            screen[i][j][0] = 0;
-            screen[i][j][1] = 0;
-            screen[i][j][2] = 0;
+
+            screen[BUFFER_SIZE - 1][i][j][0] = 0;
+            screen[BUFFER_SIZE - 1][i][j][1] = 0;
+            screen[BUFFER_SIZE - 1][i][j][2] = 0;
             z_buffer[i][j] = INFINITY;
         }
     }
 }
 
-void fill(int color[4]) {
+void fill(float color[4]) {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            screen[i][j][0] = color[0];
-            screen[i][j][1] = color[1];
-            screen[i][j][2] = color[2];
+            screen[BUFFER_SIZE - 1][i][j][0] = scale_rgb(color[0]);
+            screen[BUFFER_SIZE - 1][i][j][1] = scale_rgb(color[1]);
+            screen[BUFFER_SIZE - 1][i][j][2] = scale_rgb(color[2]);
         }
     }
 }
 
-void draw_pixel(vec3 pos, int color[4]) {
+void draw_pixel(vec3 pos, float color[4]) {
     int row = (int)round(scale_y(pos.y));
     int col = (int)round(scale_x(pos.x));
 
-    if (row < 0 || row >= HEIGHT || col < 0 || col >= WIDTH) {
+    if (pos.x < -1 || pos.x > 1 || pos.y < -1 || pos.y > 1) {
         return;
     }
 
@@ -61,12 +66,12 @@ void draw_pixel(vec3 pos, int color[4]) {
         return;
     }
     
-    int blended_color[3];
+    float blended_color[3];
     for (int i = 0; i < 3; i++) {
-        float alpha = color[3] / 255.0;
-        blended_color[i] = (int)(color[i] * alpha + screen[row][col][i] * (1 - alpha));
+        float alpha = color[3];
+        blended_color[i] = (color[i] * alpha + screen[BUFFER_SIZE - 1][row][col][i] * (1 - alpha));
         z_buffer[row][col] = pos.z;
-        screen[row][col][i] = clamp_rgb(blended_color[i]);
+        screen[BUFFER_SIZE - 1][row][col][i] = scale_rgb(blended_color[i]);
     }
 }
 
@@ -81,7 +86,7 @@ void draw_triangle_filled(triangle t) {
     vec3 v2 = t.verts[1];
     vec3 v3 = t.verts[2];
 
-    int color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
+    float color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
 
     float min_x, max_x, min_y, max_y;
     min_x = min(v1.x, min(v2.x, v3.x));
@@ -133,40 +138,23 @@ void draw_triangle(triangle t, draw_mode mode) {
     }
 }
 
-void draw_line(vec3 v1, vec3 v2, int color[4]) {
+// z buffer is not correct.  not sure what is wrong.
+void draw_line(vec3 v1, vec3 v2, float color[4]) {
     float dx = v2.x - v1.x;
     float dy = v2.y - v1.y;
     float dz = v2.z - v1.z;
-    
-    float x, y, z;
-    if (abs(dx) > abs(dy)) {
-        float m = dy / dx;
-        float b = v1.y - m * v1.x;
-        if (dx < 0) {
-            vec3 temp = v1;
-            v1 = v2;
-            v2 = temp;
-        }
-        for (x = v1.x; x <= v2.x; x+=X_STEP) {
-            y = m * x + b;
-            z = v1.z + dz * (x - v1.x) / dx;
-            vec3 pos = {x, y, z};
-            draw_pixel(pos, color);
-        }
-    } else {
-        float m = dx / dy;
-        float b = v1.x - m * v1.y;
-        if (dy < 0) {
-            vec3 temp = v1;
-            v1 = v2;
-            v2 = temp;
-        }
-        for (y = v1.y; y <= v2.y; y+=Y_STEP) {
-            x = m * y + b;
-            z = v1.z + dz * (y - v1.y) / dy;
-            vec3 pos = {x, y, z};
-            draw_pixel(pos, color);
-        }
+    float stepsf = max(abs(dx), abs(dy)) * 1000.0f;
+    if (stepsf < 1.0f) stepsf = 1.0f;
+    int steps = (int)stepsf;
+    float sx = dx / steps;
+    float sy = dy / steps;
+    float sz = dz / steps;
+    vec3 pos = v1;
+    for (int i = 0; i <= steps; i++) {
+        draw_pixel(pos, color);
+        pos.x += sx;
+        pos.y += sy;
+        pos.z += sz;
     }
 }
 
@@ -179,9 +167,11 @@ void draw_mesh(mesh m) {
 void cycle_buffer() {
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            single_buffer[i][j][0] = screen[i][j][0];
-            single_buffer[i][j][1] = screen[i][j][1];
-            single_buffer[i][j][2] = screen[i][j][2];
+            for (int k = 0; k < BUFFER_SIZE - 1; k++) {
+                screen[k][i][j][0] = screen[k + 1][i][j][0];
+                screen[k][i][j][1] = screen[k + 1][i][j][1];
+                screen[k][i][j][2] = screen[k + 1][i][j][2];
+            }
         }
     }
 }
@@ -192,19 +182,23 @@ void push_to_screen() {
 
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
-            #ifdef DOUBLE_BUFFER
-                printf("\033[48;2;%d;%d;%dm ", single_buffer[i][j][0], single_buffer[i][j][1], single_buffer[i][j][2]);
-            #else
-                printf("\033[48;2;%d;%d;%dm ", screen[i][j][0], screen[i][j][1], screen[i][j][2]);
-            #endif
+            int r = 0, g = 0, b = 0;
+            for (int k = 0; k < BUFFER_SIZE; k++) {
+                r += screen[k][i][j][0];
+                g += screen[k][i][j][1];
+                b += screen[k][i][j][2];
+            }
+            printf("\033[48;2;%d;%d;%dm ", 
+                clamp_rgb(r / BUFFER_SIZE),
+                clamp_rgb(g / BUFFER_SIZE), 
+                clamp_rgb(b / BUFFER_SIZE)
+            );
         }
         printf("\033[0m\n"); // Reset color and move to the next line
     }
     fflush(stdout);
 
-    #ifdef DOUBLE_BUFFER
-        cycle_buffer();
-    #endif
+    cycle_buffer();
 
     printf("\033[?25h"); // Show cursor
 }
