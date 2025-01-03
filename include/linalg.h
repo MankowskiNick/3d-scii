@@ -9,6 +9,9 @@
 #define sgn(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
 
 vec3 cross_product(vec3 v1, vec3 v2);
+float dot_product(vec3 v1, vec3 v2);
+float magnitude(vec3 v);
+void normalize(vec3* v);
 void translate(vec3* v, vec3 translation);
 void rot_x(vec3* v, double angle);
 void rot_y(vec3* v, double angle);

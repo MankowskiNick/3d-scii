@@ -10,6 +10,21 @@ vec3 cross_product(vec3 v1, vec3 v2) {
     return result;
 }
 
+float dot_product(vec3 v1, vec3 v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}
+
+float magnitude(vec3 v) {
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+void normalize(vec3* v) {
+    float mag = magnitude(*v);
+    v->x /= mag;
+    v->y /= mag;
+    v->z /= mag;
+}
+
 void translate(vec3* v, vec3 translation) {
     v->x += translation.x;
     v->y += translation.y;
@@ -34,7 +49,6 @@ void rot_z(vec3* v, double angle) {
     v->x = x * cos(angle) - y * sin(angle);
     v->y = x * sin(angle) + y * cos(angle);
 }
-
 void rot(vec3* v, vec3 axis, double angle) {
     // align v with xz plane
     float ang1 = atan2(axis.y, axis.z);
@@ -52,6 +66,9 @@ void rot(vec3* v, vec3 axis, double angle) {
 void rot_mesh(mesh* m, vec3 axis, double angle) {
     for (int i = 0; i < m->num_verts; i++) {
         rot(&m->verts[i], axis, angle);
+    }
+    for (int i = 0; i < m->num_normals; i++) {
+        rot(&m->normals[i], axis, angle);
     }
 }
 

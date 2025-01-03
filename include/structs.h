@@ -16,16 +16,25 @@ typedef struct {
 
 typedef struct {
     int verts[3];
+    int norms[3];
     float color[4];
 } face;
 
 typedef struct {
     uint num_verts;
     uint num_tris;
+    uint num_normals;
     vec3* verts;
+    vec3* normals;
     face* tris;
     draw_mode mode;
 } mesh;
+
+typedef struct {
+    vec3 pos;
+    float intensity;
+    float color[3];
+} light;
 
 static inline void free_mesh(mesh* m) {
     if (m->tris != NULL) {

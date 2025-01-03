@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <math.h>
 
-#define X_STEP 0.5 / WIDTH
-#define Y_STEP 0.5 / HEIGHT
+#define X_STEP 1.0 / WIDTH
+#define Y_STEP 1.0 / HEIGHT
 #define ERROR_MARGIN 0.01
 
 #define clamp_rgb(x) (x < 0 ? 0 : (x > 255 ? 255 : x))
@@ -103,7 +103,21 @@ void draw_face_wireframe(mesh* m, face t) {
     }
 }
 
-void draw_face_filled(mesh* m, face t) {
+vec3 get_normal_interp(mesh* m, face t, vec3 p) {
+    // return average of normals
+    vec3 n1 = m->normals[t.norms[0]];
+    vec3 n2 = m->normals[t.norms[1]];
+    vec3 n3 = m->normals[t.norms[2]];
+    vec3 n = {
+        (n1.x + n2.x + n3.x) / 3.0,
+        (n1.y + n2.y + n3.y) / 3.0,
+        (n1.z + n2.z + n3.z) / 3.0
+    };
+    normalize(&n);
+    return n;
+}
+
+void draw_face_filled(mesh* m, face t, light* lights, int num_lights) {
     uint v1_id = t.verts[0];
     uint v2_id = t.verts[1];
     uint v3_id = t.verts[2];
@@ -111,8 +125,6 @@ void draw_face_filled(mesh* m, face t) {
     vec3 v1 = m->verts[v1_id];
     vec3 v2 = m->verts[v2_id];
     vec3 v3 = m->verts[v3_id];
-
-    float color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
 
     float min_x, max_x, min_y, max_y;
     min_x = min(v1.x, min(v2.x, v3.x));
@@ -142,18 +154,37 @@ void draw_face_filled(mesh* m, face t) {
             float w3 = cross_product(v1_to_v2, v1_to_p).z / area;
             float z = w1 * v1.z + w2 * v2.z + w3 * v3.z;
 
+            vec3 pos = { x, y, z };
+
             if ((sgn(dir1) == sgn(dir2)) && (sgn(dir2) == sgn(dir3))) {
-                vec3 pos = { x, y, z };
+                float color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
+                #ifdef ENABLE_LIGHTING
+                    // lighting calculations
+                    float total_r = 0, total_g = 0, total_b = 0;
+                    for (int i = 0; i < num_lights; i++) {
+                        vec3 norm = get_normal_interp(m, t, pos);
+                        vec3 light_dir = {lights[i].pos.x - pos.x, lights[i].pos.y - pos.y, lights[i].pos.z - pos.z};
+                        normalize(&light_dir);
+                        float intensity = max(0.0f, dot_product(norm, light_dir)) * lights[i].intensity;
+                        total_r += lights[i].color[0] * intensity;
+                        total_g += lights[i].color[1] * intensity;
+                        total_b += lights[i].color[2] * intensity;
+                    }
+                    color[0] *= min(1.0f, total_r); // this is a bit off
+                    color[1] *= min(1.0f, total_g);
+                    color[2] *= min(1.0f, total_b);
+                #endif
+
                 draw_pixel(pos, color);
             }
         }
     }
 }
 
-void draw_face(mesh* m, face t, draw_mode mode) {
+void draw_face(mesh* m, face t, light* lights, int num_lights, draw_mode mode) {
     switch (mode) {
         case FILL:
-            draw_face_filled(m, t);
+            draw_face_filled(m, t, lights, num_lights);
             break;
         case WIRE:
             draw_face_wireframe(m, t);
@@ -164,9 +195,9 @@ void draw_face(mesh* m, face t, draw_mode mode) {
     }
 }
 
-void draw_mesh(mesh m) {
+void draw_mesh(mesh m, light* lights, int num_lights) {
     for (int i = 0; i < m.num_tris; i++) {
-        draw_face(&m, m.tris[i], m.mode);
+        draw_face(&m, m.tris[i], lights, num_lights,  m.mode);
     }
 }
 
