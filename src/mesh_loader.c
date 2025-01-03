@@ -67,7 +67,7 @@ int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float s
     // Parse the vertices
     int vert_index = 0;
     while (fgets(line, 128, file) != NULL) {
-        if (line[0] == 'v') {
+        if (line[0] == 'v' && line[1] == ' ') {
             parse_vert(line, verts, vert_index, scale_factor);
             vert_index++;
         }
@@ -79,7 +79,7 @@ int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float s
     // Parse the faces
     int tri_index = 0;
     while (fgets(line, 128, file) != NULL) {
-        if (line[0] == 'f') {
+        if (line[0] == 'f' && line[1] == ' ') {
             parse_face(line, tris, verts, tri_index);
             tri_index++;
         }

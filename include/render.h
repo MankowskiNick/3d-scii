@@ -7,7 +7,7 @@
 #define WIDTH 200
 #define HEIGHT  100
 
-#define BUFFER_SIZE 4
+#define BUFFER_SIZE 3
 
 void initialize_screen();
 void clear_screen();

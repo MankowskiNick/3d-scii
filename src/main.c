@@ -17,7 +17,7 @@ int main() {
     float angle = 0.0;
     while (running) {
         // Clear the screen
-        angle += 0.01;
+        angle += 0.05;
         clear_screen();
 
         // rotate and draw teapot
