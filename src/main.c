@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <stdlib.h>
+#include <time.h>
 #include "render.h"
 #include "linalg.h"
 #include "structs.h"
@@ -10,11 +11,17 @@
 // #define FILENAME "models/teapot_export.obj"
 // #define SCALING_FACTOR 0.04f
 
-// #define FILENAME "models/cube.obj"
+#define FILENAME "models/cube.obj"
+#define SCALING_FACTOR 0.5f
+
+// #define FILENAME "models/sheep.obj"
 // #define SCALING_FACTOR 0.5f
 
-#define FILENAME "models/Mask01.obj"
-#define SCALING_FACTOR 0.0004f
+// #define FILENAME "models/Mask01.obj"
+// #define SCALING_FACTOR 0.0004f
+
+// #define FILENAME "models/backpack.obj" // need to translate down 1.5
+// #define SCALING_FACTOR 0.01f
 
 int main() {
     initialize_screen();
@@ -43,27 +50,28 @@ int main() {
 
     int running = 1;
     int frame_count = 0;
-    float angle = 0.0;
+    float framerate = 0.0;
     while (running) {
-        frame_count++;
-        // Clear the screen
-        angle += 0.01;
-        clear_screen();
+        clock_t start = clock();
 
-        // rotate light
+        // Rotate light
         rot_y(&(l[0].pos), 0.01);
 
-        // rotate and draw teapot
-        vec3 rot_axis = { 1.0, 1.0, 1.0 };
-        // rot_mesh(&mesh, rot_axis, angle);
+        // Draw the mesh
+        clear_screen();
         draw_mesh(mesh, &l, 2);
-        // rot_mesh(&mesh, rot_axis, -angle);
-
-        // Push the screen to the terminal
         push_to_screen();
 
-        // Sleep for animation effect
-        usleep(10000); // 10ms sleep = 100fps
+        // Calculate current framerate
+        clock_t end = clock();
+        float frametime = ((float)(end - start) / CLOCKS_PER_SEC) * 1000.0;
+        framerate = 1000.0 / frametime;
+        frame_count++;
+
+        // Print debug info
+        printf("Frame time: %.2f ms \n", frametime);
+        printf("Framerate: %.2f\n", framerate);
+        printf("Frame count: %d\n", frame_count);
     }
 
     // Free the mesh

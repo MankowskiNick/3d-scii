@@ -114,6 +114,31 @@ vec3 get_normal_interp(mesh* m, face t, vec3 p) {
     return n;
 }
 
+void get_lighting(mesh* m, face* t, vec3 pos, light* lights, int num_lights) {
+    // lighting calculations
+    float total_r = 0, total_g = 0, total_b = 0;
+    float contrib[3] = { 0.0, 0.0, 0.0 };
+
+    for (int i = 0; i < num_lights; i++) {
+        float intensity = lights[i].intensity;
+
+        if (lights[i].type == POINT && m->num_normals > 0) {
+            vec3 norm = get_normal_interp(m, *t, pos);
+            vec3 light_dir = {lights[i].pos.x - pos.x, lights[i].pos.y - pos.y, lights[i].pos.z - pos.z};
+            normalize(&light_dir);
+            intensity *= max(0.0f, dot_product(norm, light_dir));
+        }
+        contrib[0] += lights[i].color[0] * intensity;
+        contrib[1] += lights[i].color[1] * intensity;
+        contrib[2] += lights[i].color[2] * intensity;
+    }
+
+    // clamp color values
+    t->color[0] = min(1.0f, contrib[0]);
+    t->color[1] = min(1.0f, contrib[1]);
+    t->color[2] = min(1.0f, contrib[2]);
+}
+
 void draw_face_filled(mesh* m, face t, light* lights, int num_lights) {
     uint v1_id = t.verts[0];
     uint v2_id = t.verts[1];
@@ -154,30 +179,12 @@ void draw_face_filled(mesh* m, face t, light* lights, int num_lights) {
             vec3 pos = { x, y, z };
 
             if ((sgn(dir1) == sgn(dir2)) && (sgn(dir2) == sgn(dir3))) {
-                float color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
+                // float color[4] = {t.color[0], t.color[1], t.color[2], t.color[3]};
                 #ifdef ENABLE_LIGHTING
-                    // lighting calculations
-                    float total_r = 0, total_g = 0, total_b = 0;
-
-                    for (int i = 0; i < num_lights; i++) {
-                        float intensity = lights[i].intensity;
-
-                        if (lights[i].type == POINT && m->num_normals > 0) {
-                            vec3 norm = get_normal_interp(m, t, pos);
-                            vec3 light_dir = {lights[i].pos.x - pos.x, lights[i].pos.y - pos.y, lights[i].pos.z - pos.z};
-                            normalize(&light_dir);
-                            intensity *= max(0.0f, dot_product(norm, light_dir));
-                        }
-                        total_r += lights[i].color[0] * intensity;
-                        total_g += lights[i].color[1] * intensity;
-                        total_b += lights[i].color[2] * intensity;
-                    }
-                    color[0] *= min(1.0f, total_r); // this is a bit off
-                    color[1] *= min(1.0f, total_g);
-                    color[2] *= min(1.0f, total_b);
+                    get_lighting(m, &t, pos, lights, num_lights);
                 #endif
 
-                draw_pixel(pos, color);
+                draw_pixel(pos, t.color);
             }
         }
     }

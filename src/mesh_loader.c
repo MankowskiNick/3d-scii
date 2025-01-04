@@ -179,6 +179,8 @@ int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float s
 
     printf("Mesh %s loaded successfully\n", filename);
 
+    printf("Press 'Enter' to continue...\n");
+    getchar();
     
     return 1;
 }
