@@ -36,6 +36,7 @@ typedef struct {
 } mesh;
 
 typedef struct {
+    enum { POINT, AMBIENT } type;
     vec3 pos;
     float intensity;
     float color[3];

@@ -64,16 +64,16 @@ void rot(vec3* v, vec3 axis, double angle) {
 }
 
 void rot_mesh(mesh* m, vec3 axis, double angle) {
-    for (int i = 0; i < m->num_verts; i++) {
+    for (uint i = 0; i < m->num_verts; i++) {
         rot(&m->verts[i], axis, angle);
     }
-    for (int i = 0; i < m->num_normals; i++) {
+    for (uint i = 0; i < m->num_normals; i++) {
         rot(&m->normals[i], axis, angle);
     }
 }
 
 void translate_mesh(mesh* m, vec3 translation) {
-    for (int i = 0; i < m->num_verts; i++) {
+    for (uint i = 0; i < m->num_verts; i++) {
         translate(&m->verts[i], translation);
     }
 }

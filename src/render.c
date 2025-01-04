@@ -158,11 +158,16 @@ void draw_face_filled(mesh* m, face t, light* lights, int num_lights) {
                 #ifdef ENABLE_LIGHTING
                     // lighting calculations
                     float total_r = 0, total_g = 0, total_b = 0;
+
                     for (int i = 0; i < num_lights; i++) {
-                        vec3 norm = get_normal_interp(m, t, pos);
-                        vec3 light_dir = {lights[i].pos.x - pos.x, lights[i].pos.y - pos.y, lights[i].pos.z - pos.z};
-                        normalize(&light_dir);
-                        float intensity = max(0.0f, dot_product(norm, light_dir)) * lights[i].intensity;
+                        float intensity = lights[i].intensity;
+
+                        if (lights[i].type == POINT) {
+                            vec3 norm = get_normal_interp(m, t, pos);
+                            vec3 light_dir = {lights[i].pos.x - pos.x, lights[i].pos.y - pos.y, lights[i].pos.z - pos.z};
+                            normalize(&light_dir);
+                            intensity *= max(0.0f, dot_product(norm, light_dir));
+                        }
                         total_r += lights[i].color[0] * intensity;
                         total_g += lights[i].color[1] * intensity;
                         total_b += lights[i].color[2] * intensity;

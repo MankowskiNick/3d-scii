@@ -8,6 +8,6 @@
 #define ENABLE_LIGHTING
 #define BUFFER_SIZE 3
 
-#define DEBUG_COLORS
+// #define DEBUG_COLORS
 
 #define MAX_FACE_VERTICES 16

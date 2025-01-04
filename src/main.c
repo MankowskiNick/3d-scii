@@ -10,15 +10,23 @@
 int main() {
     initialize_screen();
 
-    light l = {
+    light diffuse_light = {
         .pos = { 1.0, 0.0, 0.0 },
-        .intensity = 10.0,
-        .color = { 1.0, 1.0, 1.0 }
+        .intensity = 0.5,
+        .color = { 1.0, 1.0, 1.0 },
+        .type = POINT
     };
+    light ambient_light = {
+        .intensity = 0.1,
+        .color = { 1.0, 1.0, 1.0 },
+        .type = AMBIENT
+    };
+
+    light l[] = { diffuse_light, ambient_light };
 
     mesh mesh;
 
-    if (!load_mesh_from_obj("Mask01.obj", &mesh, FILL, 0.0004f, (float[4]){ 0.0f, 0.8f, 0.0f, 1.0f })) {
+    if (!load_mesh_from_obj("Mask01.obj", &mesh, FILL, 0.0004f, (float[4]){ 1.0f, 1.0f, 1.0f, 1.0f })) {
         printf("Failed to load mesh\n");
         return 1;
     }
@@ -35,7 +43,7 @@ int main() {
         // rotate and draw teapot
         vec3 rot_axis = { 0.0, 1.0, 0.0 };
         rot_mesh(&mesh, rot_axis, angle);
-        draw_mesh(mesh, &l, 1);
+        draw_mesh(mesh, &l, 2);
         rot_mesh(&mesh, rot_axis, -angle);
 
         // Push the screen to the terminal
