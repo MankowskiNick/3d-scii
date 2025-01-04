@@ -7,13 +7,13 @@
 #include "structs.h"
 #include "mesh_loader.h"
 
-// #define FILENAME "teapot_export.obj"
+// #define FILENAME "models/teapot_export.obj"
 // #define SCALING_FACTOR 0.04f
 
-// #define FILENAME "cube.obj"
+// #define FILENAME "models/cube.obj"
 // #define SCALING_FACTOR 0.5f
 
-#define FILENAME "Mask01.obj"
+#define FILENAME "models/Mask01.obj"
 #define SCALING_FACTOR 0.0004f
 
 int main() {
