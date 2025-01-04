@@ -11,14 +11,14 @@
 // #define FILENAME "models/teapot_export.obj"
 // #define SCALING_FACTOR 0.04f
 
-#define FILENAME "models/cube.obj"
-#define SCALING_FACTOR 0.5f
+// #define FILENAME "models/cube.obj"
+// #define SCALING_FACTOR 0.5f
 
 // #define FILENAME "models/sheep.obj"
 // #define SCALING_FACTOR 0.5f
 
-// #define FILENAME "models/Mask01.obj"
-// #define SCALING_FACTOR 0.0004f
+#define FILENAME "models/Mask01.obj"
+#define SCALING_FACTOR 0.0004f
 
 // #define FILENAME "models/backpack.obj" // need to translate down 1.5
 // #define SCALING_FACTOR 0.01f
@@ -78,5 +78,6 @@ int main() {
     free_mesh(&mesh);
 
     printf("\033[20;0H"); // Move cursor below the output
+    printf("\033[?25h"); // Show cursor
     return 0;
 }

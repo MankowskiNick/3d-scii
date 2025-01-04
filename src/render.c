@@ -246,5 +246,5 @@ void push_to_screen() {
 
     cycle_buffer();
 
-    printf("\033[?25h"); // Show cursor
+    // printf("\033[?25h"); // Show cursor
 }
