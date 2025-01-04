@@ -3,8 +3,6 @@
 
 #include "structs.h"
 
-// #define DEBUG_COLORS
-
 int load_mesh_from_obj(const char* filename, mesh* out_mesh, draw_mode mode, float scale_factor, float color[4]);
 
 #endif

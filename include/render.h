@@ -4,12 +4,6 @@
 #include "linalg.h"
 #include "structs.h"
 
-#define WIDTH 200
-#define HEIGHT 100
-
-#define ENABLE_LIGHTING
-#define BUFFER_SIZE 5
-
 void initialize_screen();
 void clear_screen();
 void fill(float color[4]);

@@ -3,6 +3,11 @@
 
 #include <stdlib.h>
 
+// uint is not defined in stdlib.h on Apple
+#ifdef __APPLE__
+    typedef unsigned int uint;
+#endif
+
 typedef enum {
     FILL,
     WIRE

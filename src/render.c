@@ -1,11 +1,8 @@
 #include "render.h"
 #include "linalg.h"
+#include "setting.h"
 #include <stdio.h>
 #include <math.h>
-
-#define X_STEP 1.0 / WIDTH
-#define Y_STEP 1.0 / HEIGHT
-#define ERROR_MARGIN 0.01
 
 #define clamp_rgb(x) (x < 0 ? 0 : (x > 255 ? 255 : x))
 #define scale_x(x) (int)(x * WIDTH / 2 + WIDTH / 2)

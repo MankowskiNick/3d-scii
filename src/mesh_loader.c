@@ -1,8 +1,7 @@
 #include "mesh_loader.h"
+#include "setting.h"
 #include <stdio.h>
 #include <string.h>
-
-#define MAX_FACE_VERTICES 16
 
 void reset_head(FILE* file) {
     fseek(file, 0, SEEK_SET);
@@ -139,7 +138,7 @@ int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float s
     // Open the file
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
-        return 1;
+        return 0;
     }
 
     int num_verts = 0;
@@ -159,4 +158,6 @@ int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float s
     mesh->normals = normals;
     mesh->num_normals = num_normals;
     mesh->mode = mode;
+    
+    return 1;
 }
