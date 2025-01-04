@@ -162,7 +162,7 @@ void draw_face_filled(mesh* m, face t, light* lights, int num_lights) {
                     for (int i = 0; i < num_lights; i++) {
                         float intensity = lights[i].intensity;
 
-                        if (lights[i].type == POINT) {
+                        if (lights[i].type == POINT && m->num_normals > 0) {
                             vec3 norm = get_normal_interp(m, t, pos);
                             vec3 light_dir = {lights[i].pos.x - pos.x, lights[i].pos.y - pos.y, lights[i].pos.z - pos.z};
                             normalize(&light_dir);

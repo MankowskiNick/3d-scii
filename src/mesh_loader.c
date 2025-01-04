@@ -46,6 +46,9 @@ void parse_face(char* line, face* tris, vec3* verts, vec3* norms, int index, flo
                 n[vertex_count] = atoi(slash2 + 1) - 1;
             }
         }
+        else {
+            n[vertex_count] = -1;
+        }
         
         // Get vertex index
         v[vertex_count] = atoi(token) - 1;
@@ -136,20 +139,27 @@ face* load_faces(FILE* file, vec3* verts, vec3* norms, int* num_tris, float colo
 
 int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float scale_factor, float color[4]) { 
     // Open the file
+    printf("Loading mesh from file: %s\n", filename);
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
+        fprintf(stderr, "Failed to open file\n");
         return 0;
     }
+    printf("File opened successfully...\n");
+
 
     int num_verts = 0;
     int num_tris = 0;
     int num_normals = 0;
+    printf("Loading vertices...\n");
     vec3* verts = load_verts(file, &num_verts, scale_factor);
+    printf("Loading normals...\n");
     vec3* normals = load_normals(file, &num_normals);
 
-
+    printf("Loading faces...\n");
     face* tris = load_faces(file, verts, normals, &num_tris, color);
 
+    printf("Exporting mesh...\n");
     // Set the mesh properties
     mesh->tris = tris;
     mesh->verts = verts;
@@ -158,6 +168,17 @@ int load_mesh_from_obj(const char* filename, mesh* mesh, draw_mode mode, float s
     mesh->normals = normals;
     mesh->num_normals = num_normals;
     mesh->mode = mode;
+
+    printf("Mesh loaded successfully\n");
+    printf("Number of vertices: %d\n", num_verts);
+    printf("Number of normals: %d\n", num_normals);
+    printf("Number of faces: %d\n", num_tris);
+
+    printf("Closing file...\n");
+    fclose(file);
+
+    printf("Mesh %s loaded successfully\n", filename);
+
     
     return 1;
 }
